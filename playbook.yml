@@ -59,10 +59,10 @@
         - /etc/pki/tls/private
 
     - name: copy the crt to logstash box
-      copy: src=ogstash-forwarder.crt dest=/etc/pki/tls/certs/
+      copy: src=logstash-forwarder.crt dest=/etc/pki/tls/certs/
 
     - name: copy the key to logstash box
-      copy: logstash-forwarder.key dest=/etc/pki/tls/private/
+      copy: src=logstash-forwarder.key dest=/etc/pki/tls/private/
    
     - name: start logstash
       service: name=logstash state=restarted  
