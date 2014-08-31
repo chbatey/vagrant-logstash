@@ -13,6 +13,7 @@
       with_items: 
         - deb http://packages.elasticsearch.org/elasticsearch/1.1/debian stable main
         - deb http://packages.elasticsearch.org/logstash/1.4/debian stable main
+        - deb http://packages.elasticsearch.org/logstashforwarder/debian stable main
   
     - name: install elastic search
       apt: name=elasticsearch=1.1.1 state=present  
@@ -20,8 +21,11 @@
     - name: install logstash
       apt: name=logstash=1.4.2-1-2c0f5a1 state=present
 
+    - name: create kibana dir
+      file: path=/var/www/kibana3/ state=directory
+
     - name: copy over kibanna
-      unarchive: src=kibana-3.1.0.tar.gz dest=/var/www/kibana3/
+      unarchive: src=kibana-3.1.0.tar.gz dest=/var/www/
 
     - name: install nginx
       apt: name=nginx state=present
@@ -31,3 +35,37 @@
 
     - name: restart nginx
       service: name=nginx state=restarted 
+   
+    - name: start elastic
+      service: name=elasticsearch state=started 
+
+    - name: copy over the logstash config files
+      copy: src={{ item }} dest=/etc/logstash/conf.d/
+      with_items:
+        - 01-lumberjack-input.conf
+        - 10-syslog.conf
+        - 30-lumberjack-output.conf
+ 
+    - name: install the forwarder for localhost
+      apt: name=logstash-forwarder state=present
+
+    - name: copy over the logstash forwarder config
+      copy: src=logstash-forwarder dest=/etc/
+
+    - name: make the directories for the crt
+      file: path={{ item }} state=directory
+      with_items:
+        - /etc/pki/tls/certs
+        - /etc/pki/tls/private
+
+    - name: copy the crt to logstash box
+      copy: src=ogstash-forwarder.crt dest=/etc/pki/tls/certs/
+
+    - name: copy the key to logstash box
+      copy: logstash-forwarder.key dest=/etc/pki/tls/private/
+   
+    - name: start logstash
+      service: name=logstash state=restarted  
+    
+    - name: restart logstash forwarder
+      service: name=logstash-forwarder state=restarted 
