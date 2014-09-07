@@ -38,6 +38,7 @@
       copy: src={{ item }} dest=/etc/logstash/conf.d/
       with_items:
         - 01-lumberjack-input.conf
+        - 02-gelf.conf
         - 10-syslog.conf
         - 30-lumberjack-output.conf
  
